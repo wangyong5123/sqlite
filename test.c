@@ -22,15 +22,6 @@ int main(int argc, char**argv)
      }
      else printf("You have opened a sqlite3 database named user successfully!\n");
  
-     /* 创建表 */
-     char *sql = " CREATE TABLE image(ID INTEGER PRIMARY KEY,filename VARCHAR(12),time INTEGER,jpeg INTEGER,yuv INTEGER,audio INTEGER,width INTEGER,height INTEGER,param1 INTEGER,param2 INTEGER);" ;
-
-      sqlite3_exec(db,sql,NULL,NULL,&zErrMsg);
-#ifdef _DEBUG_
-      printf("create error=%s\n",zErrMsg);
-      sqlite3_free(zErrMsg);
-#endif
-#if 1 
       /*插入数据  */
       char*sql1 ="INSERT INTO 'image'VALUES(1,'A00000001',84564564561561,1,1,1,1920,1080,30,20);";
       sqlite3_exec(db,sql1,NULL,NULL,&zErrMsg);
@@ -39,13 +30,12 @@ int main(int argc, char**argv)
       sqlite3_exec(db,sql2,NULL,NULL,&zErrMsg);
       char*sql3 ="INSERT INTO 'image'VALUES(4,'A00000004',94654511745715,1,1,0,1920,80,20,80);";
       sqlite3_exec(db,sql3,NULL,NULL,&zErrMsg);
-#endif
 #ifdef _DEBUG_
       printf("search error=%s\n",zErrMsg);
       sqlite3_free(zErrMsg);
 #endif
       /* 查询数据 */
-      sql="select * from image WHERE ID = 4";
+      char *sql="select * from image WHERE ID = 4";
       sqlite3_get_table(db,sql,&azResult,&nrow,&ncolumn,&zErrMsg);
       printf("nrow=%d ncolumn=%d\n",nrow,ncolumn);
       printf("the result is:\n");
@@ -54,53 +44,7 @@ int main(int argc, char**argv)
           printf("azResult[%d]=%s\n",i,azResult[i]);
         }
  
-     printf("#####################################################\n");
-     if(nrow != 0)
-     {
-     char buf[80],buf1[81];
- 
-#if 0 
-     //delete jpg
-     sprintf(buf,"/home/wy/%s.jpg",azResult[1+10]);
-     printf("buf=%s\n",buf);
-     sprintf(buf1,"rm %s",buf);
-     printf("buf1=%s\n",buf1);
-     system(buf1);	
-
-    //delete audio
-
-    //delete yuv
-#endif
-    }
-    else
-	printf("nrow is null\n");
-
-#if 1
-     /* 删除某个特定的数据 */ 
-        sql="delete from image where ID=4";
-        sqlite3_exec( db , sql , NULL , NULL , &zErrMsg );
-#ifdef _DEBUG_
-      printf("zErrMsg = %s \n", zErrMsg);
-      sqlite3_free(zErrMsg);
-#endif
- 
-      /* 查询删除后的数据 */
-      sql = "SELECT * FROM image ";
-      sqlite3_get_table( db , sql , &azResult , &nrow , &ncolumn , &zErrMsg );
-      printf( "row:%d column=%d\n " , nrow , ncolumn );
-      printf( "After deleting , the result is : \n" );
-      for( i=0 ; i<( nrow + 1 ) * ncolumn ; i++ )
-      {
-            printf( "azResult[%d] = %s\n", i , azResult[i] );
-      }
-      sqlite3_free_table(azResult);
-#ifdef _DEBUG_
-   printf("zErrMsg = %s \n", zErrMsg);
-   sqlite3_free(zErrMsg);
-#endif
-#endif
       sqlite3_close(db);
       return 0;
- 
 }
 
