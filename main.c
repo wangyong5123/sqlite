@@ -2,105 +2,74 @@
 #include <stdlib.h>
 #include "sqlite3.h"
 #define _DEBUG_
+#include "sqlite3_db.h"
+#include<string.h>
 int main(int argc, char**argv)
 {
-     sqlite3 *db=NULL;
-     int len;
-     int i=0;
-     int nrow=0;
-     int ncolumn = 0;
-     char *zErrMsg =NULL;
-     char **azResult=NULL; //二维数组存放结果
-     /* 打开数据库 */
-     len = sqlite3_open("imagetable.db",&db);
-     if( len )
-     {
-        /*  fprintf函数格式化输出错误信息到指定的stderr文件流中  */
-        fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));//sqlite3_errmsg(db)用以获得数据库打开错误码的英文描述。
-        sqlite3_close(db);
-        exit(1);
-     }
-     else printf("You have opened a sqlite3 database named user successfully!\n");
- 
-     /* 创建表 */
-     char *sql = " CREATE TABLE image(ID INTEGER PRIMARY KEY,filename VARCHAR(12),time INTEGER,jpeg INTEGER,yuv INTEGER,audio INTEGER,width INTEGER,height INTEGER,param1 INTEGER,param2 INTEGER);" ;
+	PIC_SAVE_PARAM pic_save_param[10];
+	
+	strcpy(pic_save_param[0].timestamp,"20181212188");
+	pic_save_param[0].jpeg = 1;
+	pic_save_param[0].yuv = 1;
+	pic_save_param[0].audio =1;
+	pic_save_param[0].width = 1920;
+	pic_save_param[0].height = 1080;
+	pic_save_param[0].zoom_level = 2;
+	pic_save_param[0].transcolor_mode = 1;
+	pic_save_param[0].falsecolor_type = 0;	
 
-      sqlite3_exec(db,sql,NULL,NULL,&zErrMsg);
-#ifdef _DEBUG_
-      printf("create error=%s\n",zErrMsg);
-      sqlite3_free(zErrMsg);
-#endif
-#if 1 
-      /*插入数据  */
-      char*sql1 ="INSERT INTO 'image'VALUES(1,'A00000001',84564564561561,1,1,1,1920,1080,30,20);";
-      sqlite3_exec(db,sql1,NULL,NULL,&zErrMsg);
+	sqlite3_create();	
 
-      char*sql2 ="INSERT INTO 'image'VALUES(2,'A00000002',84654156156656,1,0,1,1920,1080,20,90);";
-      sqlite3_exec(db,sql2,NULL,NULL,&zErrMsg);
-      char*sql3 ="INSERT INTO 'image'VALUES(4,'A00000004',94654511745715,1,1,0,1920,80,20,80);";
-      sqlite3_exec(db,sql3,NULL,NULL,&zErrMsg);
-#endif
-#ifdef _DEBUG_
-      printf("search error=%s\n",zErrMsg);
-      sqlite3_free(zErrMsg);
-#endif
-      /* 查询数据 */
-      sql="select * from image WHERE ID = 4";
-      sqlite3_get_table(db,sql,&azResult,&nrow,&ncolumn,&zErrMsg);
-      printf("nrow=%d ncolumn=%d\n",nrow,ncolumn);
-      printf("the result is:\n");
-      for(i=10;i<(nrow+1)*ncolumn;i++)
-        {
-          printf("azResult[%d]=%s\n",i,azResult[i]);
-        }
- 
-     printf("#####################################################\n");
-     if(nrow != 0)
-     {
-     char buf[80],buf1[81];
- 
-#if 0 
-     //delete jpg
-     sprintf(buf,"/home/wy/%s.jpg",azResult[1+10]);
-     printf("buf=%s\n",buf);
-     sprintf(buf1,"rm %s",buf);
-     printf("buf1=%s\n",buf1);
-     system(buf1);	
+	sqlite3_insert(pic_save_param);
 
-    //delete audio
+	PIC_SEARCH_PARAM pic_search_param;
+	pic_search_param.offset = 0;
 
-    //delete yuv
-#endif
-    }
-    else
-	printf("nrow is null\n");
+	int total_row,column,current_row;
 
-#if 1
-     /* 删除某个特定的数据 */ 
-        sql="delete from image where ID=4";
-        sqlite3_exec( db , sql , NULL , NULL , &zErrMsg );
-#ifdef _DEBUG_
-      printf("zErrMsg = %s \n", zErrMsg);
-      sqlite3_free(zErrMsg);
-#endif
- 
-      /* 查询删除后的数据 */
-      sql = "SELECT * FROM image ";
-      sqlite3_get_table( db , sql , &azResult , &nrow , &ncolumn , &zErrMsg );
-      printf( "row:%d column=%d\n " , nrow , ncolumn );
-      printf( "After deleting , the result is : \n" );
-      for( i=0 ; i<( nrow + 1 ) * ncolumn ; i++ )
-      {
-            printf( "azResult[%d] = %s\n", i , azResult[i] );
-      }
-      sqlite3_free_table(azResult);
-#ifdef _DEBUG_
-   printf("zErrMsg = %s \n", zErrMsg);
-   sqlite3_free(zErrMsg);
-#endif
-#endif
-      sqlite3_close(db);
-      return 0;
- 
+	char **buf = sqlite3_search(&pic_search_param,&total_row,&current_row,&column);
+	
+	printf("total_row=%d,column=%d\n",total_row,column);
+	int i,j;
+
+
+	printf("###buf content####%s,%s,%s,%s,%s,%s,%s,%s,%s\n",buf[0],buf[1],buf[2],buf[3],buf[4],buf[5],buf[6],buf[7],buf[8]);
+
+	
+	for (i = 0;i< total_row;i++)
+	{
+	for(j = 9;j<total_row*9;j+=9)
+	{
+        strcpy(pic_save_param[i].timestamp,buf[j]);
+        pic_save_param[i].jpeg = atoi(buf[j+1]);
+        pic_save_param[i].yuv = atoi(buf[j+2]);
+        pic_save_param[i].audio =atoi(buf[j+3]);
+        pic_save_param[i].width = atoi(buf[j+4]);
+        pic_save_param[i].height = atoi(buf[j+5]);
+        pic_save_param[i].zoom_level = atoi(buf[j+6]);
+        pic_save_param[i].transcolor_mode = atoi(buf[j+7]);
+        pic_save_param[i].falsecolor_type = atoi(buf[j+8]);
+		}
+	}
+
+	
+	for(i = 0;i<total_row;i++)
+	{
+	printf("################count=%d##########\n",i);
+	printf("timestamp=%s\n:",pic_save_param[i].timestamp);
+	printf("jpeg=%d:\n",pic_save_param[i].jpeg);
+	printf("yuv=%d:\n",pic_save_param[i].yuv);
+	printf("audio=%d\n:",pic_save_param[i].audio);
+	printf("width=%d:\n",pic_save_param[i].width);
+	printf("height=%d:\n",pic_save_param[i].height);
+	printf("zoom_level=%d\n",pic_save_param[i].zoom_level);
+	printf("transolor=%d\n",pic_save_param[i].transcolor_mode);
+	printf("falsecolor=%d\n",pic_save_param[i].falsecolor_type);
+	}
+		printf("\n");
+
+	//sqlite3_delete();
+
+	return 0;
 }
 
