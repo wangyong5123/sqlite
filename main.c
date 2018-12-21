@@ -20,7 +20,7 @@ int main(int argc, char**argv)
 
 	sqlite3_create();	
 
-	sqlite3_insert(pic_save_param);
+//	sqlite3_insert(pic_save_param);
 
 	PIC_SEARCH_PARAM pic_search_param;
 	pic_search_param.offset = 0;
@@ -35,11 +35,13 @@ int main(int argc, char**argv)
 
 	printf("###buf content####%s,%s,%s,%s,%s,%s,%s,%s,%s\n",buf[0],buf[1],buf[2],buf[3],buf[4],buf[5],buf[6],buf[7],buf[8]);
 
-	
-	for (i = 0;i< total_row;i++)
+
+	printf("######werwe###########\n");	
+	for (i = 0;i< current_row;i++)
 	{
-	for(j = 9;j<total_row*9;j+=9)
+	for(j = 9;j<current_row*9;j+=9)
 	{
+	printf("#######%d,###########\n",j);
         strcpy(pic_save_param[i].timestamp,buf[j]);
         pic_save_param[i].jpeg = atoi(buf[j+1]);
         pic_save_param[i].yuv = atoi(buf[j+2]);
@@ -49,11 +51,11 @@ int main(int argc, char**argv)
         pic_save_param[i].zoom_level = atoi(buf[j+6]);
         pic_save_param[i].transcolor_mode = atoi(buf[j+7]);
         pic_save_param[i].falsecolor_type = atoi(buf[j+8]);
-		}
+	}
 	}
 
 	
-	for(i = 0;i<total_row;i++)
+	for(i = 0;i<current_row;i++)
 	{
 	printf("################count=%d##########\n",i);
 	printf("timestamp=%s\n:",pic_save_param[i].timestamp);
