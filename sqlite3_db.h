@@ -27,14 +27,14 @@
 
 typedef struct PIC_SEARCH_PARAM
 {
-	char timestamp;
+	char timestamp[256];
 	int offset;
 }PIC_SEARCH_PARAM;
 
 
 typedef struct PIC_DELETE_PARAM
 {
-	char timestamp;
+	char timestamp[256];
 }PIC_DELETE_PARAM;
 
 

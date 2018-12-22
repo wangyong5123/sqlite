@@ -58,8 +58,7 @@ char ** sqlite_update(PIC_SAVE_PARAM *pic_save_param)
 	len = sqlite3_open("imagetable.db",&db);
 	if( len )
 	{
-	   fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));//sqlite3_errmsg(db)用以获得数据库打开错误码的英文描述。
-	   sqlite3_close(db);
+	   fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));//sqlite3_errmsg(db)用以获得数据库打开错误码的英文描述�?	   sqlite3_close(db);
 	   exit(1);
 	}
 	else 
@@ -67,9 +66,11 @@ char ** sqlite_update(PIC_SAVE_PARAM *pic_save_param)
 		printf("You have opened a sqlite3 database named user successfully!\n");
 	}
 	
-	sprintf(sql,"UPDATE COMPANY SET audio = 1 WHERE filename = %s",pic_save_param->timestamp);
-	sqlite3_get_table(db,sql,&azResult,&nrow,&ncolumn,&zErrMsg);
+	printf("sstimestamp=%s\n",pic_save_param->timestamp);
+	sprintf(sql,"UPDATE image SET audio = 144 WHERE timestamp = %s",pic_save_param->timestamp);
+	//sqlite3_get_table(db,sql,&azResult,&nrow,&ncolumn,&zErrMsg);
 
+	sqlite3_exec(db,sql,NULL,NULL,&zErrMsg);
 	printf("%s",zErrMsg);//no such column: name; null
 	
 	sqlite3_close(db);
@@ -88,6 +89,8 @@ char ** sqlite_update(PIC_SAVE_PARAM *pic_save_param)
 
 int sqlite3_delete(PIC_DELETE_PARAM *pic_delete_param)
 {
+	printf("sqlite3 delete...\n");
+	
 	sqlite3 *db=NULL;
 	int len;
 	int i=0;
@@ -101,23 +104,26 @@ int sqlite3_delete(PIC_DELETE_PARAM *pic_delete_param)
 	len = sqlite3_open("imagetable.db",&db);
 	if( len )
 	{
-	   fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));//sqlite3_errmsg(db)用以获得数据库打开错误码的英文描述。
-	   sqlite3_close(db);
+	   fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));//sqlite3_errmsg(db)用以获得数据库打开错误码的英文描述�?	   sqlite3_close(db);
 	   exit(1);
 	}
 	else printf("You have opened a sqlite3 database named user successfully!\n");
 
-	//sql="select * from image WHERE ID = 4";
-	sprintf(sql,"select * from image WHERE timestamp = %d",pic_delete_param->timestamp);
-	
+	//delete from image where timestamp = 2018121212
+	printf("pic_delete_param=%s\n",pic_delete_param->timestamp);	
+	sprintf(sql,"select * from image where timestamp = %s",pic_delete_param->timestamp);
 	sqlite3_get_table(db,sql,&azResult,&nrow,&ncolumn,&zErrMsg);
 	printf("nrow=%d ncolumn=%d\n",nrow,ncolumn);
 	printf("the result is:\n");
-	for(i=10;i<(nrow+1)*ncolumn;i++)
+	
+	for(i=9;i<(nrow+1)*ncolumn;i++)
 	{
 		printf("azResult[%d]=%s\n",i,azResult[i]);
 	}
- 
+
+	sprintf(sql,"delete from image where timestamp = %s",pic_delete_param->timestamp);
+	sqlite3_exec(db,sql,NULL,NULL,&zErrMsg);
+	/*
 	if(nrow != 0)
 	{
 		char buf[80],buf1[81];
@@ -133,15 +139,13 @@ int sqlite3_delete(PIC_DELETE_PARAM *pic_delete_param)
 
 		//delete yuv
 	}
-    else
+        else
 	{
 		printf("nrow is null\n");
-	}
-	/* 删除某个特定的数据 */ 
+	}*/
+	/* 删除某个特定的数�?*/ 
 	//sql="delete from image where ID=4";
 	
-	sprintf(sql,"select * from image WHERE timestamp = %d",pic_delete_param->timestamp);
-	sqlite3_exec( db , sql , NULL , NULL , &zErrMsg );
 	sqlite3_close(db);
 	return 0;
 
@@ -163,8 +167,7 @@ char ** sqlite3_search(PIC_SEARCH_PARAM *pic_search_param,int *total_row,int *cu
 	len = sqlite3_open("imagetable.db",&db);
 	if( len )
 	{
-	   fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));//sqlite3_errmsg(db)用以获得数据库打开错误码的英文描述。
-	   sqlite3_close(db);
+	   fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));//sqlite3_errmsg(db)用以获得数据库打开错误码的英文描述�?	   sqlite3_close(db);
 	   exit(1);
 	}
 	else printf("You have opened a sqlite3 database named user successfully!\n");
@@ -176,7 +179,8 @@ char ** sqlite3_search(PIC_SEARCH_PARAM *pic_search_param,int *total_row,int *cu
 	printf("sqlite3_search successful nrow=%d ncolumn=%d\n",nrow,ncolumn);//total count
 	*total_row = nrow;
 	
-	sprintf(sql,"select * from image order by timestamp desc limit 2 offset %d",pic_search_param->offset);
+	//sprintf(sql,"select * from image order by timestamp desc limit 8 offset %d",pic_search_param->offset);
+	sprintf(sql,"select * from image order by timestamp desc limit 8 offset %d",pic_search_param->offset);
 	sqlite3_get_table(db,sql,&azResult,&nrow,&ncolumn,&zErrMsg);
 	printf("nrow=%d ncolumn=%d\n",nrow,ncolumn);
 	for(i=9;i<(nrow+1)*ncolumn;i++)
@@ -204,8 +208,7 @@ int sqlite3_insert(PIC_SAVE_PARAM *pic_save_param)
      len = sqlite3_open("imagetable.db",&db);
      if( len )
      {
-        fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));//sqlite3_errmsg(db)用以获得数据库打开错误码的英文描述。
-        sqlite3_close(db);
+        fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));//sqlite3_errmsg(db)用以获得数据库打开错误码的英文描述�?        sqlite3_close(db);
         exit(1);
      }
      else printf("You have opened a sqlite3 database named user successfully!\n");
@@ -245,8 +248,7 @@ int sqlite3_create()
 	len = sqlite3_open("imagetable.db",&db);
 	if(len)
 	{
-		fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));//sqlite3_errmsg(db)用以获得数据库打开错误码的英文描述。
-		sqlite3_close(db);
+		fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));//sqlite3_errmsg(db)用以获得数据库打开错误码的英文描述�?		sqlite3_close(db);
 		exit(1);
 	}
 	else 
