@@ -18,6 +18,10 @@
 
 #define DATABASE_NAME "imagetable.db"
 
+#define YUV_PATH_PREFIX  "/DCIM1/Preview/"
+#define JPEG_PATH_PREFIX "/DCIM/Camera/"
+#define JPEG_SUFFIX ".jpg"
+#define YUV_SUFFIX  ".yuv"
 
 int IsFile(const char *fileName)
 {
@@ -47,105 +51,100 @@ char ** sqlite_update(PIC_SAVE_PARAM *pic_save_param)
 {
 	sqlite3 *db=NULL;
 	int len;
-	
+
 	int nrow=0;
 	int ncolumn = 0;
 	char *zErrMsg =NULL;
-	char **azResult=NULL; //二维数组存放结果
+	char **azResult=NULL;
 
 	char sql[80];
-	
+
 	len = sqlite3_open("imagetable.db",&db);
 	if( len )
 	{
-	   fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));//sqlite3_errmsg(db)用以获得数据库打开错误码的英文描述�?	   sqlite3_close(db);
-	   exit(1);
+		fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));
+		sqlite3_close(db);
+		exit(1);
 	}
 	else 
 	{
 		printf("You have opened a sqlite3 database named user successfully!\n");
 	}
-	
+
 	printf("sstimestamp=%s\n",pic_save_param->timestamp);
-	sprintf(sql,"UPDATE image SET audio = 144 WHERE timestamp = %s",pic_save_param->timestamp);
-	//sqlite3_get_table(db,sql,&azResult,&nrow,&ncolumn,&zErrMsg);
+	sprintf(sql,"UPDATE image SET audio = 1 WHERE timestamp = %s",pic_save_param->timestamp);
 
 	sqlite3_exec(db,sql,NULL,NULL,&zErrMsg);
 	printf("%s",zErrMsg);//no such column: name; null
-	
+
 	sqlite3_close(db);
 	return azResult;
 }
 
 
-
-#define YUV_PATH_PREFIX  "/DCIM1/Preview/"
-#define JPEG_PATH_PREFIX "/DCIM/Camera/"
-
-#define JPEG_SUFFIX ".jpg"
-#define YUV_SUFFIX  ".yuv"
-
-
-
 int sqlite3_delete(PIC_DELETE_PARAM *pic_delete_param)
 {
 	printf("sqlite3 delete...\n");
-	
 	sqlite3 *db=NULL;
 	int len;
 	int i=0;
 	int nrow=0;
 	int ncolumn = 0;
 	char *zErrMsg =NULL;
-	char **azResult=NULL; //二维数组存放结果
-
+	char **azResult=NULL; 
 	char sql[80];
-	
-	len = sqlite3_open("imagetable.db",&db);
-	if( len )
-	{
-	   fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));//sqlite3_errmsg(db)用以获得数据库打开错误码的英文描述�?	   sqlite3_close(db);
-	   exit(1);
-	}
-	else printf("You have opened a sqlite3 database named user successfully!\n");
 
-	//delete from image where timestamp = 2018121212
+	len = sqlite3_open("imagetable.db",&db);
+	if(len)
+	{
+		fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));
+		sqlite3_close(db);
+		exit(1);
+	}
+	else 
+	{
+		printf("You have opened a sqlite3 database named user successfully!\n");
+	}
+	
 	printf("pic_delete_param=%s\n",pic_delete_param->timestamp);	
+
 	sprintf(sql,"select * from image where timestamp = %s",pic_delete_param->timestamp);
 	sqlite3_get_table(db,sql,&azResult,&nrow,&ncolumn,&zErrMsg);
 	printf("nrow=%d ncolumn=%d\n",nrow,ncolumn);
 	printf("the result is:\n");
-	
+
 	for(i=9;i<(nrow+1)*ncolumn;i++)
 	{
 		printf("azResult[%d]=%s\n",i,azResult[i]);
 	}
 
-	sprintf(sql,"delete from image where timestamp = %s",pic_delete_param->timestamp);
-	sqlite3_exec(db,sql,NULL,NULL,&zErrMsg);
-	/*
+
+	//delete from disk memory	
 	if(nrow != 0)
 	{
-		char buf[80],buf1[81];
+		char buf[80],del_buf[81];
 
 		//delete jpg
-		sprintf(buf,"JPEG_PATH_PREFIX/%s.jpg",azResult[1+10]);
+		sprintf(buf,"JPEG_PATH_PREFIX/%s.jpg",azResult[10]);
 		printf("buf=%s\n",buf);
-		sprintf(buf1,"rm %s",buf);
-		printf("buf1=%s\n",buf1);
-		system(buf1);	
+
+		sprintf(del_buf,"rm -rf %s",buf);
+		printf("del cmd  buf1=%s\n",del_buf);
+		system(del_buf);	
 
 		//delete audio
 
 		//delete yuv
 	}
-        else
+	else
 	{
 		printf("nrow is null\n");
-	}*/
-	/* 删除某个特定的数�?*/ 
-	//sql="delete from image where ID=4";
-	
+	}
+
+	//delete from image table
+	sprintf(sql,"delete from image where timestamp = %s",pic_delete_param->timestamp);
+	sqlite3_exec(db,sql,NULL,NULL,&zErrMsg);
+
 	sqlite3_close(db);
 	return 0;
 
@@ -154,38 +153,39 @@ int sqlite3_delete(PIC_DELETE_PARAM *pic_delete_param)
 
 char ** sqlite3_search(PIC_SEARCH_PARAM *pic_search_param,int *total_row,int *current_row,int *column)
 {
+	printf("sqlite3_search...\n");
 	sqlite3 *db=NULL;
 	int len;
 	int i=0;
 	int nrow=0;
 	int ncolumn = 0;
 	char *zErrMsg =NULL;
-	char **azResult=NULL; //二维数组存放结果
+	char **azResult=NULL;
 
 	char sql[80],sql_total[40];
-	
+
 	len = sqlite3_open("imagetable.db",&db);
 	if( len )
 	{
-	   fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));//sqlite3_errmsg(db)用以获得数据库打开错误码的英文描述�?	   sqlite3_close(db);
-	   exit(1);
+		fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));
+		sqlite3_close(db);
+		exit(1);
 	}
-	else printf("You have opened a sqlite3 database named user successfully!\n");
+	else 
+		printf("You have opened a sqlite3 database named user successfully!\n");
 
-	//sql_total="select * from image";//total count
-	
+
 	sprintf(sql_total,"select * from image");
 	sqlite3_get_table(db,sql_total,&azResult,&nrow,&ncolumn,&zErrMsg);
-	printf("sqlite3_search successful nrow=%d ncolumn=%d\n",nrow,ncolumn);//total count
+	printf("sqlite3_search total count successful nrow=%d ncolumn=%d\n",nrow,ncolumn);//total count
 	*total_row = nrow;
-	
-	//sprintf(sql,"select * from image order by timestamp desc limit 8 offset %d",pic_search_param->offset);
-	sprintf(sql,"select * from image order by timestamp desc limit 8 offset %d",pic_search_param->offset);
+
+	sprintf(sql,"select * from image order by timestamp desc limit 4 offset %d",pic_search_param->offset);
 	sqlite3_get_table(db,sql,&azResult,&nrow,&ncolumn,&zErrMsg);
-	printf("nrow=%d ncolumn=%d\n",nrow,ncolumn);
+	printf("seatch limit count nrow=%d ncolumn=%d\n",nrow,ncolumn);
 	for(i=9;i<(nrow+1)*ncolumn;i++)
 	{
-		printf("azResult[%d]=%s\n",i,azResult[i]);
+	printf("azResult[%d]=%s\n",i,azResult[i]);
 	}
 	*current_row = nrow;
 	*column = ncolumn;
@@ -199,30 +199,31 @@ char ** sqlite3_search(PIC_SEARCH_PARAM *pic_search_param,int *total_row,int *cu
 
 int sqlite3_insert(PIC_SAVE_PARAM *pic_save_param)
 {
-	 sqlite3 *db=NULL;
-     int len;
-     char *zErrMsg =NULL;
-	 
-	 char sql1[180];
-	 
-     len = sqlite3_open("imagetable.db",&db);
-     if( len )
-     {
-        fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));//sqlite3_errmsg(db)用以获得数据库打开错误码的英文描述�?        sqlite3_close(db);
-        exit(1);
-     }
-     else printf("You have opened a sqlite3 database named user successfully!\n");
+	sqlite3 *db=NULL;
+	int len;
+	char *zErrMsg =NULL;
+	char sql1[180];
 
+	len = sqlite3_open("imagetable.db",&db);
+	if(len)
+	{
+		fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));
+		sqlite3_close(db);
+		exit(1);
+	}
+	else 
+	{
+		printf("You have opened a sqlite3 database named user successfully!\n");
+	}
+
+ 	// char *sql1 ="INSERT INTO 'image'VALUES(1,'A00000001',84564564561561,1,1,1,1920,1080,30,20);";
 
 	sprintf(sql1,"INSERT INTO 'image'VALUES(%s,%d,%d,%d,%d,%d,%d,%d,%d);",\
 	pic_save_param->timestamp,pic_save_param->jpeg,pic_save_param->yuv,pic_save_param->audio,\
 	pic_save_param->height,pic_save_param->width,pic_save_param->zoom_level,pic_save_param->transcolor_mode,pic_save_param->falsecolor_type);
 
-	// char*sql1 ="INSERT INTO 'image'VALUES(1,'A00000001',84564564561561,1,1,1,1920,1080,30,20);";
 	sqlite3_exec(db,sql1,NULL,NULL,&zErrMsg);
 	printf("insert zErrMsg=%s\n",zErrMsg);
-	
-	printf("sqlite3_insert data to  successful\n");
 
 	sqlite3_close(db);
 	 
@@ -236,8 +237,6 @@ int sqlite3_create()
 	int len,ret;
 	char *zErrMsg =NULL;
 
-	// have imagetable.db
-	
 	ret = IsFile("imagetable.db");
 	if(ret == TRUE)
 	{
@@ -248,14 +247,13 @@ int sqlite3_create()
 	len = sqlite3_open("imagetable.db",&db);
 	if(len)
 	{
-		fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));//sqlite3_errmsg(db)用以获得数据库打开错误码的英文描述�?		sqlite3_close(db);
+		fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));
+		sqlite3_close(db);
 		exit(1);
 	}
 	else 
 		printf("You have opened a sqlite3 database named user successfully!\n");
-
 	
-	//const char *sql = " CREATE TABLE image(ID INTEGER PRIMARY KEY,filename VARCHAR(12),time INTEGER,jpeg INTEGER,yuv INTEGER,audio INTEGER,width INTEGER,height INTEGER,param1 INTEGER,param2 INTEGER);" ;
 	const char *sql = " CREATE TABLE image(timestamp VARCHAR(16),jpeg INTEGER,yuv INTEGER,audio INTEGER,width INTEGER,height INTEGER,zoom_level INTEGER,transcolor_mode INTEGER,falsecolor_type INTEGER);" ;
 
 	printf("sqlite3 create successful\n");
